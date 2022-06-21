@@ -71,7 +71,7 @@ class TitleAdmin(admin.ModelAdmin):
     def get_rating(self, object):
         """Вычисляет рейтинг произведения."""
         rating = object.reviews.aggregate(average_score=Avg('score'))
-        return rating.get('average_score')
+        return round(rating.get('average_score'), 1)
 
     get_rating.short_description = 'Рейтинг'
 

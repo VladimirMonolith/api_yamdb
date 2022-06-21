@@ -1,3 +1,7 @@
+.vscode/
+api_yamdb/static
+api_yamdb/sent_emails
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

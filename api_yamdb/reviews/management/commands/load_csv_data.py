@@ -1,124 +1,85 @@
 import csv
-import subprocess as sub
+import os
 
-from django.core.management.base import BaseCommand
-from reviews.models import Category, Comment, Genre, Review, Title
+from django.core.management import BaseCommand
+from django.db import IntegrityError
+
+from api_yamdb.settings import CSV_FILES_DIR
+from reviews.models import (
+    Category,
+    Comment,
+    Genre,
+    GenreTitle,
+    Review,
+    Title
+)
 from users.models import User
+
+FILES_CLASSES = {
+    'category': Category,
+    'genre': Genre,
+    'titles': Title,
+    'genre_title': GenreTitle,
+    'users': User,
+    'review': Review,
+    'comments': Comment,
+}
+
+FIELDS = {
+    'category': ('category', Category),
+    'title_id': ('title', Title),
+    'genre_id': ('genre', Genre),
+    'author': ('author', User),
+    'review_id': ('review', Review),
+}
+
+
+def open_csv_file(file_name):
+    """Менеджер контекста для открытия csv-файлов."""
+    csv_file = file_name + '.csv'
+    csv_path = os.path.join(CSV_FILES_DIR, csv_file)
+    try:
+        with (open(csv_path, encoding='utf-8')) as file:
+            return list(csv.reader(file))
+    except FileNotFoundError:
+        print(f'Файл {csv_file} не найден.')
+        return
+
+
+def change_foreign_values(data_csv):
+    """Изменяет значения."""
+    data_csv_copy = data_csv.copy()
+    for field_key, field_value in data_csv.items():
+        if field_key in FIELDS.keys():
+            field_key0 = FIELDS[field_key][0]
+            data_csv_copy[field_key0] = FIELDS[field_key][1].objects.get(
+                pk=field_value)
+    return data_csv_copy
+
+
+def load_csv(file_name, class_name):
+    """Осуществляет загрузку csv-файлов."""
+    table_not_loaded = f'Таблица {class_name.__qualname__} не загружена.'
+    table_loaded = f'Таблица {class_name.__qualname__} загружена.'
+    data = open_csv_file(file_name)
+    rows = data[1:]
+    for row in rows:
+        data_csv = dict(zip(data[0], row))
+        data_csv = change_foreign_values(data_csv)
+        try:
+            table = class_name(**data_csv)
+            table.save()
+        except (ValueError, IntegrityError) as error:
+            print(f'Ошибка в загружаемых данных. {error}. '
+                  f'{table_not_loaded}')
+            break
+    print(table_loaded)
 
 
 class Command(BaseCommand):
-    """Проводит миграции и загружает тестовые данные
-    в базу из csv файлов,которые располагаются в директории /static/data/."""
+    """Класс загрузки тестовой базы данных."""
 
     def handle(self, *args, **options):
-        self.migreate_sqlite()
-        self.import_users()
-        self.import_category()
-        self.import_genre()
-        self.import_titles()
-        self.import_review()
-        self.import_comments()
-        self.import_genre_title()
-
-        print('Загрузка тестовых данных завершена.')
-
-    def migreate_sqlite(self):
-        cmd_makemigrations = 'python manage.py makemigrations'.strip().split()
-        cmd_migrate = 'python manage.py migrate'.strip().split()
-        sub.call(cmd_makemigrations)
-        sub.call(cmd_migrate)
-
-    def import_category(self, file='category.csv'):
-        print(f'Загрузка {file}...')
-        file_path = f'static/data/{file}'
-        with open(file_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                status, created = Category.objects.update_or_create(
-                    id=row['id'],
-                    name=row['name'],
-                    slug=row['slug']
-                )
-
-    def import_genre(self, file='genre.csv'):
-        print(f'Загрузка {file}...')
-        file_path = f'static/data/{file}'
-        with open(file_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                status, created = Genre.objects.update_or_create(
-                    id=row['id'],
-                    name=row['name'],
-                    slug=row['slug']
-                )
-
-    def import_titles(self, file='titles.csv'):
-        print(f'Загрузка {file}...')
-        file_path = f'static/data/{file}'
-        with open(file_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                status, created = Title.objects.update_or_create(
-                    id=row['id'],
-                    name=row['name'],
-                    year=row['year'],
-                    category_id=row['category_id'],
-                    genre_id=row['genre_id'],
-                )
-
-    def import_review(self, file='review.csv'):
-        print(f'Загрузка {file}...')
-        file_path = f'static/data/{file}'
-        with open(file_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                status, created = Review.objects.update_or_create(
-                    id=row['id'],
-                    author_id=row['author_id'],
-                    text=row['text'],
-                    score=row['score'],
-                    pub_date=row['pub_date'],
-                    title_id=row['title_id']
-                )
-
-    def import_comments(self, file='comments.csv'):
-        print(f'Загрузка {file}...')
-        file_path = f'static/data/{file}'
-        with open(file_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                status, created = Comment.objects.update_or_create(
-                    id=row['id'],
-                    author_id=row['author_id'],
-                    text=row['text'],
-                    pub_date=row['pub_date'],
-                    review_id=row['review_id']
-                )
-
-    def import_genre_title(self, file='genre_title.csv'):
-        print(f'Загрузка {file}...')
-        file_path = f'static/data/{file}'
-        with open(file_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                status, created = Title.genre.through.objects.update_or_create(
-                    id=row['id'],
-                    genre_id=row['genre_id'],
-                    title_id=row['title_id']
-                )
-
-    def import_users(self, file='users.csv'):
-        print(f'Загрузка {file}...')
-        file_path = f'static/data/{file}'
-        with open(file_path, newline='', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                status, created = User.objects.update_or_create(
-                    id=row['id'],
-                    username=row['username'],
-                    email=row['username'],
-                    first_name=row['first_name'],
-                    last_name=row['last_name'],
-                    bio=row['bio'],
-                    role=row['role']
-                )
+        for key, value in FILES_CLASSES.items():
+            print(f'Загрузка таблицы {value.__qualname__}')
+            load_csv(key, value)
