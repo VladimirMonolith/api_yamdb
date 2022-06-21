@@ -33,7 +33,7 @@
 - Перейдите в папку api_yamdb/api_yamdb.
 - Примените миграции:   
 ``` python manage.py migrate ```
-- Загрузите тестовые данные:
+- Загрузите тестовые данные:  
 ``` python manage.py load_csv_data ```
 - Выполните команду:   
 ``` python manage.py runserver ``` 
