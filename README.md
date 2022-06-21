@@ -30,7 +30,7 @@
 ``` source venv/Scripts/activate ``` 
 - Установите зависимости из файла requirements.txt:   
 ``` pip install -r requirements.txt ```
-- Перейдите в папку api_yatube_final/yatube_api.
+- Перейдите в папку api_yamdb/api_yamdb.
 - Примените миграции:   
 ``` python manage.py migrate ```
 - Загрузите тестовые данные:
