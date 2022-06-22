@@ -1,6 +1,8 @@
 requests==2.26.0
 django==2.2.16
+django-filter==21.1
 djangorestframework==3.12.4
+djangorestframework-simplejwt==5.2.0
 PyJWT==2.1.0
 pytest==6.2.4
 pytest-django==4.4.0
