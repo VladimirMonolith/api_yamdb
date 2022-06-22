@@ -52,6 +52,26 @@ class UserSerializer(serializers.ModelSerializer):
         """
         no_me_username(data)
 
+        """
+        Это единственный вариант валидации, который устраивает тесты.Но мне
+        не понятно почему в принципе, если роль user, вообще выполняется if
+        для него, ведь предварительная проверка возвращает False и по идее
+        мы вообще дальше не должны идти.Создание похожей проверки через обычную
+        функцию в Pythontutor и пошаговое прохождение кода, показало, что
+        должен возращаться None.Однако этот валидатор работает в Postman
+        и проходит тесты.
+        Подскажите, пожалуйста, почему так?
+        Можно ли как-то еще реализовать валидацию?
+
+        def a(role=None):
+            if role != 'user':
+                if role == 'user':
+                print('Я просто user')
+            print('Я админ')
+
+        a(role='user') --> None
+        """
+
         if 'role' in data != UserRoles.user.name and 'request' in self.context:
             if self.context.get('request').user.role == UserRoles.user.name:
                 del data['role']
