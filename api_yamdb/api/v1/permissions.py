@@ -1,7 +1,5 @@
 from rest_framework import permissions
 
-from users.enums import UserRoles
-
 
 class IsSuperUserOrIsAdminOnly(permissions.BasePermission):
     """
@@ -15,7 +13,7 @@ class IsSuperUserOrIsAdminOnly(permissions.BasePermission):
             request.user.is_authenticated
             and (request.user.is_superuser
                  or request.user.is_staff
-                 or request.user.role == UserRoles.admin.name)
+                 or request.user.is_admin)
         )
 
 
@@ -40,9 +38,7 @@ class IsSuperUserIsAdminIsModeratorIsAuthor(permissions.BasePermission):
             or request.user.is_authenticated
             and (request.user.is_superuser
                  or request.user.is_staff
-                 or request.user.role in [
-                     UserRoles.admin.name,
-                     UserRoles.moderator.name
-                 ]
+                 or request.user.is_admin
+                 or request.user.is_moderator
                  or request.user == obj.author)
         )

@@ -1,12 +1,8 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+
 
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.enums import UserRoles
 from users.models import User
-
-from .validators import no_me_username
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -19,7 +15,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        return no_me_username(data)
+        """Запрещает пользователям присваивать себе имя me
+        и использовать email в качестве имени."""
+        if data.get('username') == 'me':
+            raise serializers.ValidationError(
+                'Использовать имя me запрещено'
+            )
+        elif data.get('username') == data.get('email'):
+            raise serializers.ValidationError(
+                'Нельзя использовать email в качестве имени'
+            )
+        return data
 
 
 class UserRecieveTokenSerializer(serializers.Serializer):
@@ -45,38 +51,29 @@ class UserSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
 
-    def validate(self, data):
-        """
-        Запрещает пользователям изменять себе имя на me.
-        Запрещает пользователям изменять себе роль.
-        """
-        no_me_username(data)
+    def validate_username(self, username):
+        """Запрещает пользователям менять себе имя на me
+        или использовать email в качестве имени."""
+        try:
+            if username == 'me':
+                raise serializers.ValidationError(
+                    'Использовать имя me запрещено'
+                )
+            elif username == self.instance.email:
+                raise serializers.ValidationError(
+                    'Нельзя использовать email в качестве имени'
+                )
+        except AttributeError:
+            return username
 
-        """
-        Это единственный вариант валидации, который устраивает тесты.Но мне
-        не понятно почему в принципе, если роль user, вообще выполняется if
-        для него, ведь предварительная проверка возвращает False и по идее
-        мы вообще дальше не должны идти.Создание похожей проверки через обычную
-        функцию в Pythontutor и пошаговое прохождение кода, показало, что
-        должен возращаться None.Однако этот валидатор работает в Postman
-        и проходит тесты.
-        Подскажите, пожалуйста, почему так?
-        Можно ли как-то еще реализовать валидацию?
-
-        def a(role=None):
-            if role != 'user':
-                if role == 'user':
-                print('Я просто user')
-            print('Я админ')
-
-        a(role='user') --> None
-        """
-
-        if 'role' in data != UserRoles.user.name and 'request' in self.context:
-            if self.context.get('request').user.role == UserRoles.user.name:
-                del data['role']
-                return data
-        return data
+    def validate_role(self, role):
+        """Запрещает пользователям изменять себе роль."""
+        try:
+            if self.instance.role != 'admin':
+                return self.instance.role
+            return role
+        except AttributeError:
+            return role
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -84,7 +81,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'slug')
+        exclude = ('id',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -92,7 +89,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = ('name', 'slug')
+        exclude = ('id',)
 
 
 class TitleGETSerializer(serializers.ModelSerializer):
@@ -132,14 +129,6 @@ class TitleSerializer(serializers.ModelSerializer):
         model = Title
         fields = (
             'name', 'year', 'description', 'genre', 'category')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Title.objects.all(),
-                fields=('year', 'name'),
-                message='Произведение, вышедшее в указанном'
-                        'году уже есть в базе'
-            )
-        ]
 
     def to_representation(self, title):
         """Определяет какой сериализатор будет использоваться для чтения."""
@@ -161,14 +150,14 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Запрещает пользователям оставлять повторные отзывы."""
-        if self.context.get('request').method == 'POST':
-            author = self.context.get('request').user
-            title_id = self.context.get('view').kwargs.get('title_id')
-            title = get_object_or_404(Title, pk=title_id)
-            if Review.objects.filter(author=author, title=title).exists():
-                raise serializers.ValidationError(
-                    'Вы уже оставляли отзыв на это произведение'
-                )
+        if not self.context.get('request').method == 'POST':
+            return data
+        author = self.context.get('request').user
+        title_id = self.context.get('view').kwargs.get('title_id')
+        if Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError(
+                'Вы уже оставляли отзыв на это произведение'
+            )
         return data
 
 

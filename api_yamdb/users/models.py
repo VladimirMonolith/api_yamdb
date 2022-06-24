@@ -40,15 +40,10 @@ class User(AbstractUser):
         blank=True
     )
     role = models.CharField(
-        max_length=UserRoles.max_lenth_choices(),
+        max_length=20,
         verbose_name='роль',
         choices=UserRoles.choices(),
         default=UserRoles.user.name
-    )
-    confirmation_code = models.CharField(
-        max_length=150,
-        verbose_name='код подтверждения',
-        null=True
     )
 
     class Meta:
@@ -58,3 +53,15 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username[:LENGTH_TEXT]
+
+    @property
+    def is_admin(self):
+        return self.role == UserRoles.admin.name
+
+    @property
+    def is_moderator(self):
+        return self.role == UserRoles.moderator.name
+
+    @property
+    def is_user(self):
+        return self.role == UserRoles.user.name

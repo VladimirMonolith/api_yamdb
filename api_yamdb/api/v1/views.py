@@ -11,6 +11,7 @@ from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
 from .filters import TitleFilter
+from .mixins import CreateListDestroyViewSet
 from .permissions import (
     AnonimReadOnly,
     IsSuperUserIsAdminIsModeratorIsAuthor,
@@ -39,15 +40,12 @@ class UserCreateViewSet(mixins.CreateModelMixin,
         отправляет на почту пользователя код подтверждения."""
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data.get('email')
-        username = serializer.validated_data.get('username')
-        serializer.save()
-        user = User.objects.get(username=username)
+        user, created = User.objects.get_or_create(**serializer.validated_data)
         confirmation_code = default_token_generator.make_token(user)
-        User.objects.filter(email=email).update(
+        send_confirmation_code(
+            email=user.email,
             confirmation_code=confirmation_code
         )
-        send_confirmation_code(email, confirmation_code)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -116,65 +114,30 @@ class UserViewSet(mixins.ListModelMixin,
     def get_me_data(self, request):
         """Позволяет пользователю получить подробную информацию о себе
         и редактировать её."""
-        user = get_object_or_404(User, username=request.user.username)
         if request.method == 'PATCH':
             serializer = UserSerializer(
-                user, data=request.data,
+                request.user, data=request.data,
                 partial=True, context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(mixins.CreateModelMixin,
-                      mixins.ListModelMixin,
-                      viewsets.GenericViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     """Вьюсет для создания обьектов класса Category."""
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (AnonimReadOnly | IsSuperUserOrIsAdminOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-
-    @action(
-        detail=False,
-        methods=['delete'],
-        url_path=r'(?P<slug>[-a-zA-Z0-9_]+)',
-        url_name='delete_category'
-    )
-    def delete_category(self, request, slug):
-        """Позволяет удалить категорию произведения."""
-        category = get_object_or_404(Category, slug=slug)
-        category.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class GenreViewSet(mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   viewsets.GenericViewSet):
+class GenreViewSet(CreateListDestroyViewSet):
     """Вьюсет для создания обьектов класса Genre."""
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (AnonimReadOnly | IsSuperUserOrIsAdminOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-
-    @action(
-        detail=False,
-        methods=['delete'],
-        url_path=r'(?P<slug>[-a-zA-Z0-9_]+)',
-        url_name='delete_genre'
-    )
-    def delete_genre(self, request, slug):
-        """Позволяет удалить жанр произведения."""
-        genre = get_object_or_404(Genre, slug=slug)
-        genre.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TitleViewSet(viewsets.ModelViewSet):

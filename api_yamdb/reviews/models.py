@@ -86,7 +86,8 @@ class Title(models.Model):
                 int(datetime.now().year),
                 message='Значение года не может быть больше текущего'
             )
-        ]
+        ],
+        db_index=True
     )
     description = models.TextField(
         verbose_name='описание',
@@ -111,12 +112,6 @@ class Title(models.Model):
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
         ordering = ('-year', 'name')
-        constraints = (
-            models.UniqueConstraint(
-                fields=['year', 'name'],
-                name='unique_year_title'
-            ),
-        )
 
     def __str__(self):
         return self.name[:LENGTH_TEXT]
