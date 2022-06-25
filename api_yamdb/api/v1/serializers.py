@@ -27,7 +27,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             )
         elif User.objects.filter(email=data.get('email')):
             raise serializers.ValidationError(
-                'Пользовательс таким email уже существует'
+                'Пользователь с таким email уже существует'
             )
         return data
 
