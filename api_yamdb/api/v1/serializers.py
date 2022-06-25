@@ -21,11 +21,11 @@ class UserCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Использовать имя me запрещено'
             )
-        elif User.objects.filter(username=data.get('username')).exists():
+        elif User.objects.filter(username=data.get('username')):
             raise serializers.ValidationError(
                 'Пользователь с таким username уже существует'
             )
-        elif User.objects.filter(email=data.get('email')).exists():
+        elif User.objects.filter(email=data.get('email')):
             raise serializers.ValidationError(
                 'Пользовательс таким email уже существует'
             )
