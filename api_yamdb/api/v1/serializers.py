@@ -16,14 +16,18 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Запрещает пользователям присваивать себе имя me
-        и использовать email в качестве имени."""
+        и использовать повторные username и email."""
         if data.get('username') == 'me':
             raise serializers.ValidationError(
                 'Использовать имя me запрещено'
             )
-        elif data.get('username') == data.get('email'):
+        elif User.objects.filter(username=data.get('username')).exists():
             raise serializers.ValidationError(
-                'Нельзя использовать email в качестве имени'
+                'Пользователь с таким username уже существует'
+            )
+        elif User.objects.filter(email=data.get('email')).exists():
+            raise serializers.ValidationError(
+                'Пользовательс таким email уже существует'
             )
         return data
 
@@ -52,19 +56,11 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def validate_username(self, username):
-        """Запрещает пользователям менять себе имя на me
-        или использовать email в качестве имени."""
-        try:
-            if username == 'me':
-                raise serializers.ValidationError(
-                    'Использовать имя me запрещено'
-                )
-            elif username == self.instance.email:
-                raise serializers.ValidationError(
-                    'Нельзя использовать email в качестве имени'
-                )
-        except AttributeError:
-            return username
+        if username in 'me':
+            raise serializers.ValidationError(
+                'Использовать имя me запрещено'
+            )
+        return username
 
     def validate_role(self, role):
         """Запрещает пользователям изменять себе роль."""

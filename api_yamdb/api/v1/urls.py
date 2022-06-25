@@ -1,8 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from api_yamdb.settings import API_VERSION
-
 from .views import (
     CategoryViewSet, CommentViewSet, GenreViewSet,
     ReviewViewSet, TitleViewSet, UserCreateViewSet,
@@ -25,12 +23,12 @@ router.register(
 
 auth_urls = [
     path(
-        'auth/signup/',
+        'signup/',
         UserCreateViewSet.as_view({'post': 'create'}),
         name='signup'
     ),
     path(
-        'auth/token/',
+        'token/',
         UserReceiveTokenViewSet.as_view({'post': 'create'}),
         name='token'
     )
@@ -38,6 +36,6 @@ auth_urls = [
 
 
 urlpatterns = [
-    path(f'{API_VERSION}/', include(auth_urls)),
-    path(f'{API_VERSION}/', include(router.urls))
+    path('auth/', include(auth_urls)),
+    path('', include(router.urls))
 ]

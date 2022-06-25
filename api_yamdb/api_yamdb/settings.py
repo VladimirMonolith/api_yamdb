@@ -117,11 +117,10 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 LENGTH_TEXT = 15
 LIST_PER_PAGE = 10
 EMAIL_YAMDB = 'registration_YaMDb@mail.com'
-API_VERSION = 'v1'
