@@ -121,6 +121,7 @@ class UserViewSet(mixins.ListModelMixin,
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            # serializer.save(role=request.user.role) рекомендовано ревьюером, не соответствует заданию
             return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
