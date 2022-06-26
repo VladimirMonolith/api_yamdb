@@ -54,7 +54,7 @@
 ``` POST /api/v1/titles/{title_id}/reviews/{review_id}/comments/ ```    
 
 ##### Полный список запросов API находятся в документации.
-#### Автор:
+#### Авторы:
 Гут Владимир - [https://github.com/VladimirMonolith](http://github.com/VladimirMonolith)     
 Агукин Владимир - [https://github.com/s1gurr0s](https://github.com/s1gurr0s)   
 Стацюк Виталий - [https://github.com/VitaliySta](https://github.com/VitaliySta)
