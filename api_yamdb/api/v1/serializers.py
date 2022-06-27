@@ -62,14 +62,14 @@ class UserSerializer(serializers.ModelSerializer):
             )
         return username
 
-    def validate_role(self, role):
-        """Запрещает пользователям изменять себе роль."""
-        try:
-            if self.instance.role != 'admin':
-                return self.instance.role
-            return role
-        except AttributeError:
-            return role
+    # def validate_role(self, role):
+    #     """Запрещает пользователям изменять себе роль."""
+    #     try:
+    #         if self.instance.role != 'admin':
+    #             return self.instance.role
+    #         return role
+    #     except AttributeError:
+    #         return role
 
 
 class CategorySerializer(serializers.ModelSerializer):
