@@ -30,9 +30,10 @@
 - Django 2.2.16
 - Django Rest Framework 3.12.4
 - Simple JWT
-- SQLite
+- SQLite3
 
 #### Запуск проекта в dev-режиме
+
 - Склонируйте репозиторий:  
 ``` git clone <название репозитория> ```    
 - Установите и активируйте виртуальное окружение:  
@@ -69,6 +70,6 @@
 
 #### Авторы
 
-Гут Владимир - [https://github.com/VladimirMonolith](http://github.com/VladimirMonolith)     
+Гут Владимир     
 Агукин Владимир - [https://github.com/s1gurr0s](https://github.com/s1gurr0s)   
 Стацюк Виталий - [https://github.com/VitaliySta](https://github.com/VitaliySta)
