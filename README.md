@@ -29,7 +29,7 @@
 - Python 3.7
 - Django 2.2.16
 - Django Rest Framework 3.12.4
-- Simple JWT
+- Simple JWT 5.2.0
 - SQLite3
 
 #### Запуск проекта в dev-режиме
