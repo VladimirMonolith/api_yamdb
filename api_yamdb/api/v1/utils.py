@@ -1,5 +1,4 @@
 from django.core.mail import send_mail
-# from django.contrib.auth.tokens import default_token_generator
 
 from api_yamdb.settings import EMAIL_YAMDB
 
