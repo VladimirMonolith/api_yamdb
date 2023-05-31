@@ -68,6 +68,6 @@
 
 #### Полный список запросов API находятся в документации
 
-#### Авторы
+#### Автор
 
 Гут Владимир - [https://github.com/VladimirMonolith](http://github.com/VladimirMonolith)     
