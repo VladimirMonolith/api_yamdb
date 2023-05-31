@@ -1,4 +1,4 @@
-# Групповой проект студентов Яндекс.Практикум по курсу "API: интерфейс взаимодействия программ"
+# API сервиса YaMDb
 
 ## Описание
 
@@ -71,5 +71,3 @@
 #### Авторы
 
 Гут Владимир - [https://github.com/VladimirMonolith](http://github.com/VladimirMonolith)     
-Агукин Владимир - [https://github.com/s1gurr0s](https://github.com/s1gurr0s)   
-Стацюк Виталий - [https://github.com/VitaliySta](https://github.com/VitaliySta)
